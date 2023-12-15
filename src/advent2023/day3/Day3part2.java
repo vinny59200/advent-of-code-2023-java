@@ -1,9 +1,8 @@
-package advent2023.Day3;
+package advent2023.day3;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
 
-public class DayPart2Helper {
+public class Day3part2 {
 
 
     // A Java snippet to calculate the sum of the part numbers in a puzzle input
@@ -166,39 +165,28 @@ public class DayPart2Helper {
             930.........................823..............994.................................100.....857.......................708.220.184..............
             """;
 
+    // A Java snippet to calculate the sum of the part star ratios in a puzzle input
+    // A part number is any number adjacent to a symbol, even diagonally
+    // A part star is any '*' symbol that is adjacent to exactly two part numbers
+    // A part star ratio is the product of the two part numbers adjacent to the part star
+    // Periods '.' do not count as a symbol
+    // A number can have more than one digit
+
     // The puzzle input as a 2D array of characters
-    static char[][] puzzle = stringToCharArray( sample );
+    static char[][] puzzle = {
+            { '4', '6', '7', '.', '.', '1', '1', '4', '.', '.' },
+            { '.', '.', '.', '*', '.', '.', '.', '.', '.', '.' },
+            { '.', '.', '3', '5', '.', '.', '6', '3', '3', '.' },
+            { '.', '.', '.', '.', '.', '#', '.', '.', '.', '.' },
+            { '6', '1', '7', '*', '.', '.', '.', '.', '.', '.' },
+            { '.', '.', '.', '.', '.', '+', '.', '5', '8', '.' },
+            { '.', '.', '5', '9', '2', '.', '.', '.', '.', '.' },
+            { '.', '.', '.', '.', '.', '7', '5', '5', '.', '.' },
+            { '.', '.', '.', '$', '.', '*', '.', '.', '.', '.' },
+            { '.', '6', '6', '4', '.', '5', '9', '8', '.', '.' }
+    };
 
-    // A Java method that takes a string as input and returns a 2D array of characters
-    // The string should have 10 lines of 10 characters each, separated by newlines
-    // The 2D array should have 10 rows and 10 columns, corresponding to the string
-    public static char[][] stringToCharArray( String input ) {
-
-        // Split the input string by newlines and store the result in an array of strings
-        String[] lines = input.split( "\n" );
-        // Initialize a 2D array of characters with 10 rows and 10 columns
-        char[][] output = new char[lines[0].length()][lines.length];
-
-        // Loop through the lines array
-        for ( int i = 0; i < lines.length; i++ ) {
-            // Get the current line as a string
-            String line = lines[i];
-            // Convert the current line to a char array and store the result in an array of chars
-            char[] chars = line.toCharArray();
-            // Loop through the chars array
-            for ( int j = 0; j < chars.length; j++ ) {
-                // Get the current char
-                char c = chars[j];
-                // Assign the current char to the output array at the corresponding row and column
-                output[i][j] = c;
-            }
-        }
-
-        // Return the output array
-        return output;
-    }
-
-    // A Java method to check if a character is a symbol
+    // A helper method to check if a character is a symbol
     // Returns true if the character is not a digit or not a dot '.'
     // Returns false otherwise
     public static boolean isSymbol( char c ) {
@@ -223,200 +211,75 @@ public class DayPart2Helper {
         return row >= 0 && row < puzzle.length && col >= 0 && col < puzzle[0].length;
     }
 
-    // A method to calculate the sum of the part numbers in the puzzle
+    // A method to calculate the sum of the part star ratios in the puzzle
     // Returns the sum as an integer
-    public static Map<HashMap<Integer, Integer>, Integer> findLocationsOfPartNumbers() {
+    public static int sumOfPartStarRatios() {
         // Initialize the sum to zero
         int sum = 0;
-        Map<HashMap<Integer, Integer>, Integer> location = new HashMap<>();
 
         // Loop through the puzzle rows
         for ( int i = 0; i < puzzle.length; i++ ) {
             // Loop through the puzzle columns
             for ( int j = 0; j < puzzle[0].length; j++ ) {
-                // If the current character is a digit
-                if ( isDigit( puzzle[i][j] ) ) {
-                    // Initialize a string builder to store the current number
-                    StringBuilder sb = new StringBuilder();
-                    // Initialize a boolean flag to indicate if the current number is a part number
-                    boolean isPartNumber = false;
-                    // Initialize two variables to store the current row and column
-                    int x = i;
-                    int y = j;
-                    // While the current character is a digit and the coordinate is valid
-                    while ( isValid( x, y ) && isDigit( puzzle[x][y] ) ) {
-                        // Append the current digit to the string builder
-                        sb.append( puzzle[x][y] );
-                        // Check the eight adjacent cells for a symbol
-                        // The offsets for the adjacent cells are:
-                        // (-1, -1), (-1, 0), (-1, 1)
-                        // (0, -1), (0, 1)
-                        // (1, -1), (1, 0), (1, 1)
-                        for ( int dx = -1; dx <= 1; dx++ ) {
-                            for ( int dy = -1; dy <= 1; dy++ ) {
-                                // Skip the current cell
-                                if ( dx == 0 && dy == 0 ) {
+                // If the current character is a part star
+                if ( puzzle[i][j] == '*' ) {
+                    // Initialize an array list to store the part numbers adjacent to the part star
+                    ArrayList<Integer> partNumbers = new ArrayList<>();
+                    // Check the eight adjacent cells for a part number
+                    // The offsets for the adjacent cells are:
+                    // (-1, -1), (-1, 0), (-1, 1)
+                    // (0, -1), (0, 1)
+                    // (1, -1), (1, 0), (1, 1)
+                    for ( int dx = -1; dx <= 1; dx++ ) {
+                        for ( int dy = -1; dy <= 1; dy++ ) {
+                            // Skip the current cell
+                            if ( dx == 0 && dy == 0 ) {
+                                continue;
+                            }
+                            // Calculate the adjacent row and column
+                            int x = i + dx;
+                            int y = j + dy;
+                            /// If the adjacent cell is valid and is a digit
+                            if ( isValid( x, y ) && isDigit( puzzle[x][y] ) ) {
+                                // Check the previous cell in the opposite direction
+                                int px = i - dx;
+                                int py = j - dy;
+                                // If the previous cell is valid and is a digit, skip the current cell
+                                if ( isValid( px, py ) && isDigit( puzzle[px][py] ) ) {
                                     continue;
                                 }
-                                // Calculate the adjacent row and column
-                                int nx = x + dx;
-                                int ny = y + dy;
-                                // If the adjacent cell is valid and is a symbol
-                                if ( isValid( nx, ny ) && isSymbol( puzzle[nx][ny] ) ) {
-                                    // Set the flag to true
-                                    isPartNumber = true;
-                                    // Break out of the inner loops
-                                    dx = 2;
-                                    dy = 2;
+                                // Otherwise, proceed as before
+                                // Initialize a string builder to store the current number
+                                StringBuilder sb = new StringBuilder();
+                                // While the coordinate is valid and the current character is a digit
+                                while ( isValid( x, y ) && isDigit( puzzle[x][y] ) ) {
+                                    // Append the current digit to the string builder
+                                    sb.append( puzzle[x][y] );
+                                    // Move to the next cell in the same direction
+                                    x += dx;
+                                    y += dy;
                                 }
+                                // Parse the string builder as an integer and add it to the array list
+                                partNumbers.add( Integer.parseInt( sb.toString() ) );
                             }
                         }
-                        // Move to the next cell in the same row
-                        y++;
                     }
-                    HashMap<Integer, Integer> key = new HashMap<>();
-                    key.put( x, y - 1 );
-                    location.put( key, Integer.parseInt( sb.toString() ) );
-                    //                    System.out.println(location);
-                    // If the flag is true
-                    if ( isPartNumber ) {
-                        // Parse the string builder as an integer and add it to the sum
-                        sum += Integer.parseInt( sb.toString() );
+                    System.out.println( partNumbers );
+
+                    // If the array list has exactly two part numbers
+                    if ( partNumbers.size() == 2 ) {
+                        // Calculate the part star ratio as the product of the two part numbers
+                        int partStarRatio = partNumbers.get( 0 ) * partNumbers.get( 1 );
+                        // Add the part star ratio to the sum
+                        sum += partStarRatio;
                     }
-                    // Skip the rest of the digits in the same row
-                    j = y - 1;
-                }
-            }
-        }
-        Map<HashMap<Integer, Integer>, Integer> unsortedMap = location;
-        // add some data to the unsorted map
-        Map<HashMap<Integer, Integer>, Integer> sortedMap = unsortedMap.entrySet()
-                                                                       .stream()
-                                                                       .sorted(
-                                                                               Map.Entry.comparingByKey( new Comparator<HashMap<Integer, Integer>>() {
-                                                                                   @Override
-                                                                                   public int compare( HashMap<Integer, Integer> map1, HashMap<Integer, Integer> map2 ) {
-                                                                                       // get the first entry of each map
-                                                                                       Map.Entry<Integer, Integer> entry1 = map1.entrySet()
-                                                                                                                                .iterator()
-                                                                                                                                .next();
-                                                                                       Map.Entry<Integer, Integer> entry2 = map2.entrySet()
-                                                                                                                                .iterator()
-                                                                                                                                .next();
-                                                                                       // compare the keys of the first entries
-                                                                                       int keyComparison = Integer.compare( entry1.getKey(),
-                                                                                                                            entry2.getKey() );
-                                                                                       // if the keys are equal, compare the values
-                                                                                       if ( keyComparison == 0 ) {
-                                                                                           return Integer.compare( entry1.getValue(),
-                                                                                                                   entry2.getValue() );
-                                                                                       }
-                                                                                       // otherwise, return the key comparison result
-                                                                                       return keyComparison;
-                                                                                   }
-                                                                               } ) )
-                                                                       .collect( Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue,
-                                                                                                   ( e1, e2 ) -> e1, LinkedHashMap::new ) );
-        // print the sorted map
-        //        sortedMap.forEach((key, value) -> System.out.println("Key = " + key + ", Value = " + value));
-        // Return the sum
-        return sortedMap;
-    }
-
-
-    // A method to calculate the sum of the part numbers in the puzzle
-    // Returns the sum as an integer
-    public static List<String> findLocationsOfStars() {
-        // Initialize the sum to zero
-        int sum = 0;
-        //        HashMap<Integer, Integer> location = new HashMap<>();
-        List<String> location = new ArrayList<>();
-
-        // Loop through the puzzle rows
-        for ( int i = 0; i < puzzle.length; i++ ) {
-            // Loop through the puzzle columns
-            for ( int j = 0; j < puzzle[0].length; j++ ) {
-                // If the current character is a digit
-                if ( puzzle[i][j] == '*' ) {
-                    location.add( i + "," + j );
                 }
             }
         }
 
         // Return the sum
-        return location;
-    }
-
-    public static Integer isStarValid( List<String> stars, Map<HashMap<Integer, Integer>, Integer> partNumbers ) {
-        int sum = 0;
-        for ( String star : stars ) {
-            List<Integer> starItems = new ArrayList<>();
-            int line = Integer.valueOf( star.split( "," )[0] );
-            int column = Integer.valueOf( star.split( "," )[1] );
-            for ( Map.Entry<HashMap<Integer, Integer>, Integer> partNumber : partNumbers.entrySet() ) {
-                int value = partNumber.getValue();
-                Map.Entry<Integer, Integer> partNumberLocation = partNumber.getKey()
-                                                                           .entrySet()
-                                                                           .stream()
-                                                                           .findFirst()
-                                                                           .get();
-                int locX = partNumberLocation.getValue();
-                int locY = partNumberLocation.getKey();
-                if ( locY == line || locY == line - 1 || locY == line + 1 ) {
-//                    System.out.println( "line/column--------> " + line + "   " + column );
-//                    System.out.println( "locY/locX/value----> " + locY + "   " + locX + "   " + value );
-                    //                    Set<Integer> locXSet=new HashSet<>();
-                    final int length = String.valueOf( value )
-                                             .length();
-                    for ( int i = 1; i <= length; i++ ) {
-                        //                        locXSet.add( locX-i );
-//                        System.out.println( "column/locX/value.length-----------------> " + column + "   " + locX + "   " + length );
-
-                        //                        System.out.println( "column---------------------------------> " + column + "   " + (locX - i) );
-                        if ( isColumnMatchingLocXRange( column, locX, length ) ) {
-                            starItems.add( value );
-                            System.out.println( "VV " + value );
-                            break;
-                            //                            return true;
-                        }
-                    }
-                }
-            }
-            if ( starItems.size() > 1 ) {
-                // Initialize a variable to store the product
-                int product = 1;
-
-                // Loop over the list and multiply each element by the product
-                for ( int element : starItems ) {
-                    // Multiply the element by the product
-                    product = product * element;
-                }
-                System.out.println( "product:" + product + " for " + starItems.toString() );
-                sum = sum + product;
-            }
-        }
         return sum;
     }
-
-
-    public static boolean isColumnMatchingLocXRange( int column, int locX, int range ) {
-
-        if ( column > locX && column - 1 == locX ) {
-            return true;
-        } else if ( column == locX ) {
-            return true;
-        } else if ( column < locX ) {
-            //            if(column+1>locX-range)
-            //                return true;
-            for ( int i = 0; i < range; i++ ) {
-                if ( locX - i == column + 1 ) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
 
     // A main method to test the code
     public static void main( String[] args ) {
@@ -430,13 +293,10 @@ public class DayPart2Helper {
         }
         System.out.println();
 
-        // Print the sum of the part numbers
-        System.out.println( "The locations of part numbers is:" );
-        System.out.println( findLocationsOfPartNumbers() );
-        System.out.println( "The locations of stars is:" );
-        System.out.println( findLocationsOfStars() );
-        System.out.println( "Is star valid" );
-        System.out.println( isStarValid( findLocationsOfStars(), findLocationsOfPartNumbers() ) );
+        // Print the sum of the part star ratios
+        System.out.println( "The sum of the part star ratios is:" );
+        System.out.println( sumOfPartStarRatios() );
     }
+
 
 }

@@ -1,4 +1,4 @@
-package advent2023.Day3;
+package advent2023.day3;
 
 public class Day3bis {
 
